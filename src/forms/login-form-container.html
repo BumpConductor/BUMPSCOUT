@@ -1,0 +1,77 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="login-form-container">
+    <template>
+        <style include="shared-styles">
+             :host {
+                display: block;
+            }
+        </style>
+
+        <iron-form id="emailPassword">
+            <form>
+                <paper-input name="email" id="input" value="{{form.email}}" label="{{localize('Email')}}" error-message="{{localize('Enter valid email')}}"
+                    type="email" required auto-validate>
+                    <iron-icon icon="app-icons:mail" slot="prefix"></iron-icon>
+                </paper-input>
+                <paper-input name="password" id="pwd" value="{{form.password}}" minlength="8" on-keydown="_checkForEnter" label="{{localize('Password')}}"
+                    error-message="{{localize('Min 8 characters password is required')}}" type="password" required auto-validate>
+                    <iron-icon icon="app-icons:lock" slot="prefix"></iron-icon>
+                </paper-input>
+            </form>
+            <paper-button raised on-tap="validateForm">{{localize(buttonText)}}</paper-button>
+            <slot id="extra-content"></slot>
+        </iron-form>
+    </template>    
+    <script>
+        class LoginForm extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
+            static get is(){
+                return 'login-form-container'
+            }
+
+            static get properties(){
+                return {
+                    form:{
+                        type: Object,
+                        notify: true,
+                        value:{}
+                    },
+                    errorMsg:String,
+                    buttonText:String
+                }
+            }   
+            
+            resetForm(){
+                this.form = {};
+                this.$.input.invalid = false;
+                this.$.pwd.invalid = false;
+                this.$.emailPassword.reset();
+            }
+
+            validateForm(){
+                var form = this.$.emailPassword;
+                if(form.validate()){
+                    this.dispatchEvent(new CustomEvent('form-valid', {
+                        detail: {email: this.form.email,password:this.form.password}, 
+                        bubbles: true, 
+                        composed: true
+                    }));
+                }
+            }
+
+            _checkForEnter(e) {
+                if (e.keyCode === 13) {
+                    this.validateForm();
+                }
+            }
+
+        }
+        window.customElements.define(LoginForm.is, LoginForm);
+    </script>
+</dom-module>
+    

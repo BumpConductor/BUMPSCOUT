@@ -1,0 +1,103 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../custom_elements/logo.html">
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../forms/login-form-container.html">
+
+<dom-module id="bs-login">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+                padding: 30px;
+            }            
+        </style>
+        
+        <div class="logo-container">
+            <app-logo></app-logo>
+        </div>
+        
+        <paper-tabs class="login" selected="{{selected}}" attr-for-selected="name">
+            <paper-tab name="Sign-In">{{localize('Sign-In')}}</paper-tab>
+            <paper-tab name="Register">{{localize('Register')}}</paper-tab>
+        </paper-tabs>
+        
+        <iron-pages selected="{{selected}}" attr-for-selected="name">
+            <login-form-container id="formContainer" on-form-valid="_onFormValid" name="{{selected}}" button-text="{{selected}}" language="{{language}}" resources ="{{resources}}">
+                <div class="center m-top-10" hidden$="[[!signInActive]]">
+                    <a href="/auth/forgot-password">{{localize('forgotlink')}} ?</a>
+                </div>
+                <paper-checkbox hidden$="[[signInActive]]" id="checkbox" style="margin-top: 20px;">{{localize('I agree to the')}} <a style="text-decoration: none;" href="/terms-privacy">{{localize('terms & conditions')}}</a></paper-checkbox>    
+            </login-form-container>
+        </iron-pages>    
+
+    </template>
+
+    <script>
+        class Login extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element){
+            constructor() {
+                super();
+            }
+            static get is() {
+                return 'bs-login';
+            }
+            static get properties() {
+                return {
+                    selected: {
+                        type: String,
+                        value: 'Sign-In',
+                        observer:'onTabChanged'
+                    },
+                    route:Object,
+                    signInActive:{
+                        type:Boolean,
+                        value:true
+                    },
+                    errorMsg:String
+                }
+            }
+
+            onTabChanged(key){
+                switch (key) {
+                    case 'Sign-In':
+                        this.signInActive = true;
+                        break;
+                    case 'Register':
+                        this.signInActive = false;
+                        break;
+                }
+                this.$.formContainer.resetForm();
+            }
+
+            validateCheckbox(){
+                return this.$.checkbox.checked;
+            }
+
+            _onFormValid(e){
+                if(this.signInActive){
+                    this.fireCustomEvent('login',e);
+                }else{
+                    var bool = this.validateCheckbox();
+                    if(bool) this.fireCustomEvent('signup',e);
+                }
+            }
+
+            fireCustomEvent(eventName,eventDetail){
+                
+                this.dispatchEvent(new CustomEvent(eventName, {
+                    detail: eventDetail.detail , 
+                    bubbles: true, 
+                    composed: true
+                }));
+            }
+        }
+        window.customElements.define(Login.is, Login);
+    </script>
+</dom-module>

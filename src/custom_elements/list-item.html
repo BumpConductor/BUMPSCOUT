@@ -1,0 +1,93 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+
+<dom-module id="bs-list-item">
+  <template>
+    <style>
+       :host {
+        display: block;
+      }
+
+      .avatar {
+        height: 40px;
+        width: 40px;
+        border-radius: 20px;
+        box-sizing: border-box;
+        background-color: #DDD;
+      }
+
+      paper-item,paper-icon-item {
+        background-color: var(--text-primary-color);
+        color: var(--primary-text-color);
+        border-bottom: solid 1px #BDBDBD;
+      }
+
+      :host([no-icon]) paper-icon-button{
+        display: none;
+      }
+      
+    </style>
+    <template is="dom-if" if="[[hasImage]]">
+      <paper-icon-item>
+        <iron-image class="avatar" slot="item-icon" sizing="cover" preload fade src="[[imageSrc]]" placeholder="[[placeholderImg]]"></iron-image>
+        <paper-item-body id="itemBody" two-line on-tap="_onProblemTap">
+          <div>
+            [[primaryText]]
+          </div>
+          <div secondary> [[secondaryText]]
+          </div>
+        </paper-item-body>
+        <paper-icon-button icon="app-icons:[[itemIcon]]" style="color:#ef9a9a;" alt="[[iconText]]" on-tap="_onIconTap"></paper-icon-button>
+      </paper-icon-item>
+    </template>
+
+    <template is="dom-if" if="[[!hasImage]]">
+      <paper-item>
+        <paper-item-body two-line>
+          <div>
+            [[primaryText]]
+          </div>
+          <div secondary> [[secondaryText]]
+          </div>
+        </paper-item-body>
+        <paper-icon-button icon="app-icons:[[itemIcon]]" style="color:#ef9a9a;" alt="favourite this!" on-tap="_onIconTap"></paper-icon-button>
+        </paper-icon-item>
+    </template>
+
+  </template>
+  <script>
+    class ListItem extends Polymer.Element {
+      static get is() {
+        return 'bs-list-item';
+      }
+
+      static get properties() {
+        return {
+          primaryText: String,
+          secondaryText: String,
+          itemIcon: String,
+          hasImage:{
+            type:Boolean,
+            value:true
+          },
+          imageSrc:String,
+          placeholderImg:{
+            type:String,
+            value:'../../images/user-placeholder.jpg'
+          },
+          iconText:String
+        }
+      }
+      
+      _onIconTap(e) {
+        this.dispatchEvent(new CustomEvent('icon-tap'));
+      }
+    }
+    window.customElements.define(ListItem.is, ListItem);
+  </script>
+</dom-module>

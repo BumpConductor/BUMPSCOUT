@@ -60,14 +60,14 @@
       onLogut() {
         try {
           localStorage.clear();
-          window.location.href = '/login';
+          window.location.href = 'auth/login';
         } catch (e) {
           console.log(e);
         }
       }
 
       onCancel() {
-        this.set('route.path', '/');
+        this.set('route.path', '/problems');
       }
     }
 

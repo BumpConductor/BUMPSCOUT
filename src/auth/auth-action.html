@@ -2,81 +2,85 @@
 <link rel="lazy-import" href="reset-password.html">
 
 <dom-module id="bs-auth-action">
-    <template>
-        <style>
-            :host {
-                display: block;
-                padding: 30px;
-            }
-        </style>
-            <template is="dom-if" if="{{isEmailVerify}}">
-                <div class="logo-container">
-                    <app-logo></app-logo>
-                </div>
-            </template>
-            <bs-reset-password resources ="{{resources}}" language="{{language}}" name="reset-password" on-update-password="_updatePassword" ></bs-reset-password>   
+  <template>
+    <style>
+       :host {
+        display: block;
+        padding: 30px;
+      }
+    </style>
+    <template is="dom-if" if="{{isEmailVerify}}">
+      <div class="logo-container">
+        <app-logo></app-logo>
+      </div>
     </template>
-    <script>
-        class Auth_Action extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element){
-            static get is(){
-                return 'bs-auth-action';
-            }
-            static get properties(){
-                return {
-                    visible:Boolean,
-                    route:Object,
-                    data:Object,
-                    mode:String,
-                    page:{
-                        type:String,
-                        observer:'_pageChanged'
-                    },
-                    isEmailVerify:Boolean,
-                    verificationMessage:String,
-                    code:String
-                }
-            }
-
-            static get observers(){
-                return [
-                    '_onActive(visible)'
-                ]
-            }
-
-            _onActive(visble){
-                if(visble){
-                    this.mode = this.route.__queryParams.mode;
-                    this.code = this.route.__queryParams.oobCode;   
-                    if(this.mode=='resetPassword') {
-                        this.page = 'reset-password';
-                        this.isEmailVerify = false;
-                    }
-                    else if(this.mode == 'verifyEmail'){
-                        this.isEmailVerify = true;
-                        this.dispatchEvent(new CustomEvent('verify-email',{
-                            detail:{code:this.code},
-                            bubbles:true,
-                            compposed:true
-                        }));
-                    }
-                }
-            }
-
-            _pageChanged(page) {
-				// Load page import on demand. Show 404 page if fails
-				var resolvedPageUrl = this.resolveUrl(page + '.html');
-				Polymer.importHref( resolvedPageUrl, null, null, true);
-			}
-            
-            _updatePassword(e){
-                this.dispatchEvent(new CustomEvent('reset-password',{
-                    detail:{password:e.detail.password,code:this.code},
-                    bubbles:true,
-                    compposed:true
-                }));
-            }
+    <bs-reset-password resources="{{resources}}" language="{{language}}" name="reset-password" on-update-password="_updatePassword"></bs-reset-password>
+  </template>
+  <script>
+    class Auth_Action extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
+      static get is() {
+        return 'bs-auth-action';
+      }
+      static get properties() {
+        return {
+          visible: Boolean,
+          route: Object,
+          data: Object,
+          mode: String,
+          page: {
+            type: String,
+            observer: '_pageChanged'
+          },
+          isEmailVerify: Boolean,
+          verificationMessage: String,
+          code: String
         }
-        
-        window.customElements.define(Auth_Action.is , Auth_Action);
-    </script>
+      }
+
+      static get observers() {
+        return [
+          '_onActive(visible)'
+        ]
+      }
+
+      _onActive(visble) {
+        if (visble) {
+          this.mode = this.route.__queryParams.mode;
+          this.code = this.route.__queryParams.oobCode;
+          if (this.mode == 'resetPassword') {
+            this.page = 'reset-password';
+            this.isEmailVerify = false;
+          } else if (this.mode == 'verifyEmail') {
+            this.isEmailVerify = true;
+            this.dispatchEvent(new CustomEvent('verify-email', {
+              detail: {
+                code: this.code
+              },
+              bubbles: true,
+              compposed: true
+            }));
+          }
+        }
+      }
+
+      _pageChanged(page) {
+        // Load page import on demand. Show 404 page if fails
+        var resolvedPageUrl = this.resolveUrl(page + '.html');
+        Polymer.importHref(resolvedPageUrl, null, null, true);
+      }
+
+      _updatePassword(e) {
+        this.dispatchEvent(new CustomEvent('reset-password', {
+          detail: {
+            password: e.detail.password,
+            code: this.code
+          },
+          bubbles: true,
+          compposed: true
+        }));
+      }
+    }
+
+    window.customElements.define(Auth_Action.is, Auth_Action);
+  </script>
 </dom-module>

@@ -1,15 +1,17 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../../bower_components/polymerfire/firebase-auth.html">
-<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../bower_components/paper-spinner/paper-spinner-lite.html">
 
 <link rel="import" href="../shared-styles.html">
 <link rel="lazy-import" href="login.html">
 <link rel="lazy-import" href="forgot-password.html">
-<link rel="import" href="auth-action.html">
+<link rel="lazy-import" href="auth-action.html">
+<link rel="lazy-import" href="signout.html">
+
 <dom-module id="bs-auth-manager">
   <template>
     <style include="shared-styles">
@@ -18,10 +20,9 @@
       }
     </style>
 
-    <app-location route="{{subroute}}"></app-location>
-    <app-route route="{{subroute}}" pattern="/auth/:page" data="{{routeData}}"></app-route>
+    <app-location route="{{route}}"></app-location>
+    <app-route route="{{route}}" pattern="/auth/:page" data="{{routeData}}"></app-route>
     <paper-spinner-lite id="spinner" class="custom" active="{{showSpinner}}"></paper-spinner-lite>
-
 
     <firebase-app id="app" auth-domain="[[firebase.authDomain]]" database-url="[[firebase.databaseURL]]" storage-bucket="[[firebase.storageBucket]]"
       api-key="[[firebase.apiKey]]"></firebase-app>
@@ -32,6 +33,7 @@
       <bs-forgot-password name="forgot-password" language="{{language}}" resources="{{resources}}" on-reset-email="_onSendResetEmail"></bs-forgot-password>
       <bs-auth-action language="{{language}}" resources="{{resources}}" route="[[route]]" verification-message="{{verificationMessage}}"
         name="auth-action" on-verify-email="verifyEmail" on-reset-password="resetPassword"></bs-auth-action>
+      <bs-signout name ="signout" language="{{language}}" resources="{{resources}}" route="{{route}}" ></bs-signout>
     </iron-pages>
 
   </template>
@@ -67,7 +69,12 @@
           toastMsg: String,
           user: {
             type: Object,
+            observer:'_onUser',
             notify: true
+          },
+          token:{
+            type:String,
+            value:localStorage.getItem('token')
           }
         }
       }
@@ -81,7 +88,7 @@
       _routePageChanged(page) {
         // If no page was found in the route data, page will be an empty string.
         // Default to 'view1' in that case.
-        this.page = page || 'login';
+        this.page = page;
       }
 
       _pageChanged(page) {
@@ -104,11 +111,13 @@
       async _onLogin(e) {
         try {
           this.set('showSpinner', true)
-          this.user = await this.$.auth.signInWithEmailAndPassword(e.detail.email, e.detail.password);
+          let userInfo = this.user = await this.$.auth.signInWithEmailAndPassword(e.detail.email, e.detail.password);
           let emailVerified = this._checkUserEmail();
           if (emailVerified) {
             let token = await userInfo.getIdToken(true);
+            localStorage.setItem('uid',userInfo.uid);
             localStorage.setItem('token', token);
+            this.set('route.path','/problems')
           } else {
             this.user = null;
             this.signedIn = false;
@@ -208,6 +217,33 @@
         notification.show(type, message);
       }
 
+      _onUser(user){
+        if(user){
+          this.dispatchEvent(new CustomEvent('logged-in', {
+            detail: {user:user,signedIn:true,token:this.token},
+            bubbles: true,
+            composed: true
+          }));
+          this.refreshToken();
+        }
+      }
+
+      refreshToken(){
+        if(this.user){
+            var slef = this;
+            this.user.getIdToken(true).then(function(token){
+                if(token){
+                    self.token = token;
+                    localStorage.setItem('token',token);
+                }else{
+                    localStorage.clear(); // In case no token found or invalid user.
+                }
+            });
+          } 
+        setTimeout(function(){
+          this.refreshToken();
+        }.bind(this), 3540000);
+      }
     }
     window.customElements.define(AuthManager.is, AuthManager);
   </script>

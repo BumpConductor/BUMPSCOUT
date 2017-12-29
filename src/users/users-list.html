@@ -1,0 +1,104 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../custom_elements/list-item.html">
+<dom-module id="bs-users-list">
+  <template>
+    <style>
+       :host {
+        display: block;
+        /* background: #efefef; */
+        /* min-height: 100vh; */
+      }
+
+      .loadingIndicator {
+        text-align: center;
+        height: 40px;
+      }
+
+      paper-spinner {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+      }
+
+      iron-list {
+        padding-bottom: 16px;
+        --iron-list-items-container: {
+          max-width: 800px;
+          margin: auto;
+        };
+      }
+    </style>
+
+    <iron-ajax id="ajax" url="[[API_URL]]/profileslist/[[uid]]" handle-as="json" loading="{{loadingPeople}}" on-response="_didRespond"
+      headers$='{"Authorization": "Bearer [[token]]", "Content-Type": "application/json"}'></iron-ajax>
+
+    <div role="listbox" id="user-list">
+      <iron-list id="list" items="[[peoples]]" as="item" scroll-target="document">
+        <template>
+          <bs-list-item primary-text="[[item.displayName]]" placeholder-img="[[placeholder]]" has-image="[[has]]" secondary-text="[[item.bio]]" image-src="[[item.photoURL]]"
+            no-icon></bs-list-item>
+        </template>
+      </iron-list>
+      <div class="loadingIndicator">
+        <paper-spinner active="{{loadingPeople}}"></paper-spinner>
+      </div>
+      <iron-scroll-threshold id="scrollTheshold" lower-threshold="10" on-lower-threshold="_load" scroll-target="document"></iron-scroll-threshold>
+    </div>
+  </template>
+
+
+  <script>
+    class UserList extends Polymer.Element {
+      static get is() {
+        return 'bs-users-list'
+      };
+      static get properties() {
+        return {
+          API_URL: {
+            type: String,
+            value: window.Global.API_URL
+          },
+          token: {
+            type: String,
+            value: localStorage.getItem('token')
+          },
+          uid: {
+            type: String,
+            value: localStorage.getItem('uid')
+          },
+          peoples: {
+            type: Object
+          },
+          page: {
+            type: String,
+            value: 'user-list'
+          },
+          userUid: String
+        }
+      }
+
+      _load() {
+        this.$.ajax.generateRequest();
+      }
+
+
+      _didRespond(e) {
+        var people = e.detail.response.profiles;
+        this.peoples = people;
+      }
+
+      viewUser(e) {
+        var uid = this.userUid = e.model.item.uid;
+        this.set('route.path', '/users/' + uid);
+      }
+    }
+
+    window.customElements.define(UserList.is, UserList);
+  </script>
+</dom-module>

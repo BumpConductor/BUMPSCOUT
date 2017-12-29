@@ -1,0 +1,79 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../shared-styles.html">
+<link rel="lazy-import" href="users-list.html">
+<link rel="lazy-import" href="user.html">
+<dom-module id="bs-users-manager">
+  <template>
+    <style include="shared-styles">
+       :host {
+        display: block;
+      }
+    </style>
+
+    <app-route route="{{route}}" pattern="/users/:id" data="{{routeData}}" tail="{{subRoute}}" active="{{userInfoActive}}"></app-route>
+    <app-route route="{{route}}" pattern="/users" active="{{usersActive}}"></app-route>
+    <paper-spinner-lite id="spinner" class="custom" active="{{showSpinner}}"></paper-spinner-lite>
+
+    <iron-pages role="main" attr-for-selected="name" selected="[[page]]" selected-attribute="active">
+        <bs-users-list name="users-list" route="{{route}}" user="{{user}}" resources="{{resources}}" language="{{language}}"></bs-users-list>
+        <bs-user id="user" name="user" user-uid="[[routeData.id]]" route="{{subRoute}}" root-route="{{route}}"> </bs-user>
+    </iron-pages>
+
+  </template>
+
+  <script>
+    class UsersManager extends Polymer.Element {
+      static get is() {
+        return 'bs-users-manager';
+      }
+      static get properties() {
+        return {
+          page:{
+            type:String,
+            observer:'_pageChanged'
+          },
+          showSpinner: {
+            type: Boolean,
+            value: true,
+          }    
+        }
+      }
+
+      static get observers() {
+        return [
+          '_routePageChanged(userInfoActive,usersActive)',
+        ]
+      }
+
+      _routePageChanged(userInfoActive,usersActive) {
+        if(userInfoActive){
+          return this.page = 'user';
+        }
+        if(usersActive){
+          this.page = 'users-list'
+        }
+      }
+
+      _pageChanged(page) {
+        // Load page import on demand. Show 404 page if fails
+        var resolvedPageUrl = this.resolveUrl(page + '.html');
+        Polymer.importHref(resolvedPageUrl, this.set('showSpinner', false), null, true);
+      }
+    }
+
+    window.customElements.define(UsersManager.is, UsersManager);
+  </script>
+</dom-module>

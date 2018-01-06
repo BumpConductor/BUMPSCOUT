@@ -1,0 +1,68 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+
+<link rel="lazy-import" href="problems-list.html">
+<link rel="lazy-import" href="problem.html">
+
+<dom-module id="bs-problems-manager">
+
+  <template>
+    <style>
+       :host {
+        display: block;
+      }
+    </style>
+    
+    <app-location route="{{route}}"></app-location>
+    <app-route route="{{route}}" pattern="/problems/:page" data="{{routeData}}"></app-route>
+
+    <iron-pages role="main" attr-for-selected="name" selected="[[page]]" selected-attribute="active">
+      <bs-problems-list name="list" language="{{language}}" route="{{route}}" resources="{{resources}}" ></bs-problems-list>
+      <bs-problem name="[[page]]" language="{{language}}" route="{{route}}" resources="{{resources}}"></bs-problem>
+    </iron-pages>
+
+  </template>
+
+  <script>
+    class ProblemsManager extends Polymer.Element {
+      static get is() {
+        return 'bs-problems-manager';
+      }
+
+      static get properties() {
+        return {
+          page:{
+            type:String,
+            observer:'_pageChanged'
+          }    
+        }
+      }
+
+      static get observers() {
+        return [
+          '_routePageChanged(routeData.page)',
+        ]
+      }
+
+      _routePageChanged(page) {
+        // If no page was found in the route data, page will be an empty string.
+        // Default to 'view1' in that case.
+        this.page = page || 'list';
+      }
+
+      _pageChanged(page) {
+        // Load page import on demand. Show 404 page if fails
+        var self = this;
+        var pageUrl = (page =='list') ? 'problems-list' : 'problem' ; 
+        var resolvedPageUrl = this.resolveUrl(pageUrl + '.html');
+        Polymer.importHref(resolvedPageUrl, this.set('showSpinner', false), null, true);
+      }
+    }
+
+    window.customElements.define(ProblemsManager.is, ProblemsManager)
+
+  </script>
+
+</dom-module>

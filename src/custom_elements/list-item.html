@@ -34,8 +34,8 @@
     </style>
     <template is="dom-if" if="[[hasImage]]">
       <paper-icon-item>
-        <iron-image class="avatar" slot="item-icon" sizing="cover" preload fade src="[[imageSrc]]" placeholder="[[placeholderImg]]"></iron-image>
-        <paper-item-body id="itemBody" two-line on-tap="_onProblemTap">
+        <iron-image class="avatar" slot="item-icon" sizing="cover" on-tap="_onAvatarTap" preload fade src="[[imageSrc]]" placeholder="[[placeholderImg]]"></iron-image>
+        <paper-item-body id="itemBody" two-line on-tap="_onBoadyTap">
           <div>
             [[primaryText]]
           </div>
@@ -48,7 +48,7 @@
 
     <template is="dom-if" if="[[!hasImage]]">
       <paper-item>
-        <paper-item-body two-line>
+        <paper-item-body two-line on-tap="_onBoadyTap">
           <div>
             [[primaryText]]
           </div>
@@ -86,6 +86,14 @@
       
       _onIconTap(e) {
         this.dispatchEvent(new CustomEvent('icon-tap'));
+      }
+
+      _onBoadyTap(e){
+        this.dispatchEvent(new CustomEvent('body-tap'));
+      }
+
+      _onAvatarTap(){
+        this.dispatchEvent(new CustomEvent('avatar-tap'));
       }
     }
     window.customElements.define(ListItem.is, ListItem);

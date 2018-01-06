@@ -28,10 +28,6 @@
 
       iron-list {
         padding-bottom: 16px;
-        --iron-list-items-container: {
-          max-width: 800px;
-          margin: auto;
-        };
       }
     </style>
 
@@ -41,7 +37,7 @@
     <div role="listbox" id="user-list">
       <iron-list id="list" items="[[peoples]]" as="item" scroll-target="document">
         <template>
-          <bs-list-item primary-text="[[item.displayName]]" placeholder-img="[[placeholder]]" has-image="[[has]]" secondary-text="[[item.bio]]" image-src="[[item.photoURL]]"
+          <bs-list-item on-body-tap="viewUser" primary-text="[[item.displayName]]" placeholder-img="[[placeholder]]" has-image="[[has]]" secondary-text="[[item.bio]]" image-src="[[item.photoURL]]"
             no-icon></bs-list-item>
         </template>
       </iron-list>

@@ -28,13 +28,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <paper-spinner-lite id="spinner" class="custom" active="{{showSpinner}}"></paper-spinner-lite>
 
     <iron-pages role="main" attr-for-selected="name" selected="[[page]]" selected-attribute="active">
-        <bs-profile-settings user="{{user}}" resources="{{resources}}" language="{{language}}" name="profile"></bs-profile-settings>
+        <bs-profile-settings user="{{user}}" route="{{route}}" resources="{{resources}}" language="{{language}}" name="profile"></bs-profile-settings>
     </iron-pages>
 
   </template>
 
   <script>
-    class SettingsManager extends Polymer.Element {
+    class SettingsManager extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) { 
       static get is() {
         return 'bs-settings-manager';
       }
@@ -47,7 +47,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           showSpinner: {
             type: Boolean,
             value: true,
-          }    
+          },
+          language:String    
         }
       }
 

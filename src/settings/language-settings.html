@@ -1,0 +1,53 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<dom-module id="bs-language-settings">
+  <template>
+    <style>
+       :host {
+        display: block;
+      }
+      paper-dropdown-menu {
+        width: 100%;
+      }
+    </style>
+
+    <paper-dropdown-menu name="language" label="{{localize('Language')}}">
+      <paper-listbox slot="dropdown-content" attr-for-selected="value" on-iron-activate="_changeLanguageSettings" selected="{{userLanguage.code}}">
+        <template is="dom-repeat" id="roles" items="[[languages]]" as="item">
+          <paper-item value="[[item.code]]">[[item.value]]</paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+  </template>
+  <script>
+    class LanguageSettings extends Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element) {
+      static get is() {
+        return 'bs-language-settings';
+      }
+
+      static get properties() {
+        return {
+          languages: {
+            type: Object,
+            value: [{code: 'en',value: 'English'}, {code: 'fr',value: 'French'}, {code: 'nl',value: 'Dutch'}, {code: 'de',value: 'German'}]
+          },
+          language:String,
+          userLanguage:Object
+        }
+      }
+
+      _changeLanguageSettings(e) {
+        // localStorage.setItem('language',e.detail.selected);
+        document.getElementById('app').language = e.detail.selected;
+        this.userLanguage =  {
+          code:e.detail.selected,
+          value:e.detail.item.textContent
+        }
+      }
+    }
+
+    window.customElements.define(LanguageSettings.is, LanguageSettings);
+  </script>
+</dom-module>

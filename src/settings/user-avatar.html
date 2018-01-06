@@ -1,0 +1,128 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-storage-ref.html">
+
+<dom-module id="bs-user-avatar">
+  <template>
+    <style>
+       :host {
+        display: block;
+      }
+
+      .avatar-container {
+        position: relative;
+        border: 2px solid #3DACE3;
+        border-radius: 50%;
+        height: 150px;
+        padding: 2px;
+        width: 150px;
+        margin: 20px auto;
+      }
+
+      #imgPlaceholder {
+        width: 150px;
+        border-radius: 50%;
+        height: 150px;
+        object-fit: cover;
+      }
+
+      #camera-fab {
+        position: absolute;
+        bottom: 2px;
+        right: 6px;
+        background: #90CAF9;
+      }
+    </style>
+
+    <firebase-storage-ref id="storageRef" metadata="{{metadata}}" storage-uri="{{gsUri}}" download-url="{{downloadUrl}}">
+    </firebase-storage-ref>
+    <div class="avatar-container">
+      <iron-image id="imgPlaceholder" src="[[imageUrl]]" preload fade sizing="cover" placeholder="[[placeholderImage]]"></iron-image>
+      <paper-fab mini id="camera-fab" on-click="_cameraClick" icon="app-icons:camera" role="button" tabindex="0"></paper-fab>
+      <input type="file" id="fileInput" on-change="_fileChange" hidden accept="[[acceptedFileTypes]]">
+    </div>
+  </template>
+
+
+  <script>
+    class UserAvatar extends Polymer.Element {
+      static get is() {
+        return 'bs-user-avatar';
+      }
+      static get properties() {
+        return {
+          gsUri: {
+            type: String,
+            value: window.Global.firebase.gsURI
+          },
+          placeholderImage: {
+            type: String,
+            value: "../../images/user-placeholder.jpg"
+          },
+          acceptedFileTypes: {
+            type: Array,
+            value: ['image/jpg', 'image/jpeg', 'image/png', 'image/bmp']
+          },
+          metadata: {
+            type: Object,
+            value: {
+              contentType: 'image/jpeg'
+            }
+          },
+          imageUrl:String
+        }
+      }
+
+      _cameraClick() {
+        var elem = this.$.fileInput;
+        if (elem && document.createEvent) {
+          var evt = document.createEvent('MouseEvents');
+          evt.initEvent('click', true, false);
+          elem.dispatchEvent(evt);
+        }
+      }
+
+      _fileChange(e) {
+        this._hideDelete = true;
+        var files = e.target.files;
+        if (files.length) {
+          this.fileObj = files[0];
+          var self = this;
+          var reader = new FileReader();
+          reader.onload = function (evt) {
+            self.$.imgPlaceholder.src = evt.target.result;
+            self._updateImage();
+          };
+          reader.readAsDataURL(files[0]);
+        }
+      }
+
+      async _updateImage() {
+        var uid = localStorage.getItem('uid');
+        var timeStamp = new Date().getTime();
+        var path = this.path + '/' + uid
+        var storageRef = this.$.storageRef;
+        storageRef.path = path;
+        try {
+          let uploadTask = await storageRef.put(this.fileObj, this.metadata);
+          if (uploadTask.downloadURL) {
+            this.onUpload(true,null,uploadTask.downloadURL);
+          }
+        } catch (e) {
+          this.onUpload(false,e.messgae,null);
+        }
+      }
+      onUpload(success,error,downloadURL){
+        this.dispatchEvent(new CustomEvent('image-upload',{
+          detail:{'url':downloadURL,'success':success,error:error},
+          bubbles: true,
+          composed: true
+        }))
+      }
+    }
+    window.customElements.define(UserAvatar.is, UserAvatar)
+  </script>
+</dom-module>

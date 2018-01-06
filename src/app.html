@@ -93,17 +93,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <paper-spinner-lite id="spinner" class="custom" active="{{showSpinner}}"></paper-spinner-lite>
     <app-notification id="notification"></app-notification>
     
-
+		    
     <app-drawer-layout fullbleed narrow="{{narrow}}">
       <!-- Drawer content -->
       <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]" >
         <app-toolbar>Menu</app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="problems" href="[[rootPath]]problems" hidden$="[[!signedIn]]">Home</a>
-          <a name="settings" href="[[rootPath]]settings" hidden$="[[!signedIn]]">Settings</a>
-          <a name="users" href="[[rootPath]]users" hidden$="[[!signedIn]]">Users</a>
+          <a name="problems" href="[[rootPath]]problems" hidden$="[[!signedIn]]">{{localize('Home')}}</a>
+          <a name="settings" href="[[rootPath]]settings" hidden$="[[!signedIn]]">{{localize('Settings')}}</a>
+          <a name="users" href="[[rootPath]]users" hidden$="[[!signedIn]]">{{localize('User list')}}</a>
           <a name="auth" href="[[rootPath]]auth/login" hidden$="[[signedIn]]">Signin</a>
-          <a name="auth" href="[[rootPath]]auth/signout" hidden$="[[!signedIn]]">Signout</a>
+          <a name="auth" href="[[rootPath]]auth/signout" hidden$="[[!signedIn]]">{{localize('Sign out')}}</a>
         </iron-selector>
       </app-drawer>
 
@@ -149,7 +149,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           // Polymer.Element#rootPath
           rootPath: String,
           language: {
-            value: localStorage.getItem('language') || 'en',
+            value: localStorage.getItem('language') || 'en',            
             type: String,
             notify: true,
             reflectToAttribute: true
@@ -168,7 +168,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 						type:String,
 						value:'BUMPSCOUT'
 					},
-          signedIn:Boolean          
+          signedIn:{
+            type:Boolean,
+            value:false,
+            notify:true,
+            reflectToAttribute:true
+          }         
         };
       }
 
@@ -185,10 +190,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _routePageChanged(page) { 
         // If no page was found in the route data, page will be an empty string.
         // Default to 'view1' in that case.
-        this.page = page || 'auth';
+        this.page = page || this.getPage();
         //Close a non-persistent drawer when the page & route are changed.
         if (!this.$.drawer.persistent) {
           this.$.drawer.close();
+        }
+      }
+
+      getPage(){
+        if(this.signedIn) return 'problems';
+        else{
+          this.page ='auth';
+          this.set('route.path','auth/login');
         }
       }
 
@@ -207,6 +220,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if(data.user){
           this.user = data.user;
           this.signedIn = true;
+        }else{
+          this.signedIn = false;
         }
       }
     }
